@@ -270,8 +270,7 @@ static void AddPublicKeyInfoToJSON()
 void GenKeyPair()
 {
 	Printf( "Generating keypair...\n" );
-	CECSigningPrivateKey privKey;
-	CCrypto::GenerateSigningKeyPair( &s_keyCertPub, &privKey );
+	CCrypto::GenerateSigningKeyPair( &s_keyCertPub, &s_keyCAPriv);
 
 	std::string sKeyID( PublicKeyIDAsString() );
 
@@ -311,7 +310,7 @@ void GenKeyPair()
 		DbgVerify( pubKeyCheck == s_keyCertPub );
 	}
 
-	DbgVerify( privKey.GetAsPEM( text, sizeof(text), &cbText ) );
+	DbgVerify(s_keyCAPriv.GetAsPEM( text, sizeof(text), &cbText ) );
 	if ( s_bOutputTrimWhitespace )
 		V_strcpy_safe( text, CompressWhitespace( text ).c_str() );
 	if ( s_bOutputValveSrcds )
@@ -325,7 +324,7 @@ void GenKeyPair()
 	{
 		CECSigningPrivateKey privKeyCheck;
 		DbgVerify( privKeyCheck.LoadFromAndWipeBuffer( text, cbText ) );
-		DbgVerify( privKeyCheck == privKey );
+		DbgVerify( privKeyCheck == s_keyCAPriv);
 	}
 }
 
