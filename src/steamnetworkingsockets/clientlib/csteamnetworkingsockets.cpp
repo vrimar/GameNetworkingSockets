@@ -1638,9 +1638,9 @@ bool CSteamNetworkingSockets::BMatchesIdentity( const SteamNetworkingIdentity &i
 	return false;
 }
 
-bool CSteamNetworkingSockets::SetCertificateAndPrivateKey( const void *pCert, int cbCert, void *pPrivateKey, int cbPrivateKey )
+bool CSteamNetworkingSockets::SetCertificateAndPrivateKey( const void *pCert, int cbCert, void *pPrivateKey, int cbPrivateKey, SteamNetworkingErrMsg &errMsg )
 {
-	SteamNetworkingGlobalLock::AssertHeldByCurrentThread( "SetCertificateAndPrivateKey" );
+	SteamNetworkingGlobalLock scopeLock( "SetCertificateAndPrivateKey" );
 
 	m_msgCert.Clear();
 	m_msgSignedCert.Clear();
@@ -1651,17 +1651,17 @@ bool CSteamNetworkingSockets::SetCertificateAndPrivateKey( const void *pCert, in
 	//
 	if ( !m_keyPrivateKey.LoadFromAndWipeBuffer( pPrivateKey, cbPrivateKey ) )
 	{
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, "Invalid private key" );
+		V_strcpy_safe( errMsg, "Invalid private key" );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 
 	//
 	// Decode the cert
 	//
-	SteamNetworkingErrMsg parseErrMsg;
-	if ( !ParseCertFromPEM( pCert, cbCert, m_msgSignedCert, parseErrMsg ) )
+	if ( !ParseCertFromPEM( pCert, cbCert, m_msgSignedCert, errMsg ) )
 	{
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, parseErrMsg );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 
@@ -1671,12 +1671,14 @@ bool CSteamNetworkingSockets::SetCertificateAndPrivateKey( const void *pCert, in
 		|| !m_msgCert.has_time_expiry()
 		|| !m_msgCert.has_key_data()
 	) {
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, "Invalid cert" );
+		V_strcpy_safe( errMsg, "Invalid cert" );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 	if ( m_msgCert.key_type() != CMsgSteamDatagramCertificate_EKeyType_ED25519 )
 	{
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, "Invalid cert or unsupported public key type" );
+		V_strcpy_safe( errMsg, "Invalid cert or unsupported public key type" );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 
@@ -1687,18 +1689,31 @@ bool CSteamNetworkingSockets::SetCertificateAndPrivateKey( const void *pCert, in
 	CECSigningPublicKey pubKey;
 	if ( !pubKey.SetRawDataWithoutWipingInput( m_msgCert.key_data().c_str(), m_msgCert.key_data().length() ) )
 	{
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, "Invalid public key" );
+		V_strcpy_safe( errMsg, "Invalid public key" );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 	if ( !m_keyPrivateKey.MatchesPublicKey( pubKey ) )
 	{
-		SetCertStatus( k_ESteamNetworkingAvailability_Failed, "Private key doesn't match public key from cert" );
+		V_strcpy_safe( errMsg, "Private key doesn't match public key from cert" );
+		SetCertStatus( k_ESteamNetworkingAvailability_Failed, errMsg );
 		return false;
 	}
 
 	SetCertStatus( k_ESteamNetworkingAvailability_Current, "OK" );
 
 	return true;
+}
+
+bool CSteamNetworkingSockets::AddTrustedRootCA( const char *pszBase64Cert, SteamNetworkingErrMsg &errMsg )
+{
+	SteamNetworkingGlobalLock scopeLock( "AddTrustedRootCA" );
+	if ( pszBase64Cert == nullptr || *pszBase64Cert == '\0' )
+	{
+		V_strcpy_safe( errMsg, "Empty CA cert blob" );
+		return false;
+	}
+	return CertStore_AddCertFromBase64( pszBase64Cert, errMsg );
 }
 
 int CSteamNetworkingSockets::GetP2P_Transport_ICE_Enable( const SteamNetworkingIdentity &identityRemote, int *pOutUserFlags )

@@ -44,7 +44,6 @@ public:
 	CMsgSteamDatagramCertificate m_msgCert;
 	CECSigningPrivateKey m_keyPrivateKey;
 	bool BCertHasIdentity() const;
-	virtual bool SetCertificateAndPrivateKey( const void *pCert, int cbCert, void *pPrivateKey, int cbPrivateKey );
 
 	bool BHasAnyConnections() const;
 	bool BHasAnyListenSockets() const;
@@ -113,6 +112,8 @@ public:
 
 	virtual bool GetCertificateRequest( int *pcbBlob, void *pBlob, SteamNetworkingErrMsg &errMsg ) override;
 	virtual bool SetCertificate( const void *pCertificate, int cbCertificate, SteamNetworkingErrMsg &errMsg ) override final; // Final.  Override InternalSetCertificate to customize
+	virtual bool SetCertificateAndPrivateKey( const void *pCert, int cbCert, void *pPrivateKey, int cbPrivateKey, SteamNetworkingErrMsg &errMsg ) override;
+	virtual bool AddTrustedRootCA( const char *pszBase64Cert, SteamNetworkingErrMsg &errMsg ) override;
 	virtual void ResetIdentity( const SteamNetworkingIdentity *pIdentity ) override;
 
 	virtual HSteamListenSocket CreateListenSocketP2PFakeIP( int idxFakePort, int nOptions, const SteamNetworkingConfigValue_t *pOptions ) override;

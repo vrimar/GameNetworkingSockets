@@ -180,6 +180,14 @@ STEAMNETWORKINGSOCKETS_INTERFACE bool SteamAPI_ISteamNetworkingSockets_SetCertif
 {
 	return self->SetCertificate( pCertificate,cbCertificate,errMsg );
 }
+STEAMNETWORKINGSOCKETS_INTERFACE bool SteamAPI_ISteamNetworkingSockets_SetCertificateAndPrivateKey( ISteamNetworkingSockets* self, const void * pCertificate, int cbCertificate, void * pPrivateKey, int cbPrivateKey, SteamNetworkingErrMsg & errMsg )
+{
+	return self->SetCertificateAndPrivateKey( pCertificate, cbCertificate, pPrivateKey, cbPrivateKey, errMsg );
+}
+STEAMNETWORKINGSOCKETS_INTERFACE bool SteamAPI_ISteamNetworkingSockets_AddTrustedRootCA( ISteamNetworkingSockets* self, const char * pszBase64Cert, SteamNetworkingErrMsg & errMsg )
+{
+	return self->AddTrustedRootCA( pszBase64Cert, errMsg );
+}
 STEAMNETWORKINGSOCKETS_INTERFACE void SteamAPI_ISteamNetworkingSockets_RunCallbacks( ISteamNetworkingSockets* self )
 {
 	self->RunCallbacks(  );

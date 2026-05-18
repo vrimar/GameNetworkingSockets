@@ -803,6 +803,25 @@ public:
 	/// SteamDatagram_CreateCert.
 	virtual bool SetCertificate( const void *pCertificate, int cbCertificate, SteamNetworkingErrMsg &errMsg ) = 0;
 
+	/// Set the certificate and private key directly.  Use this for "bring your own
+	/// keypair" deployments where the cert+key were generated offline (e.g. via the
+	/// certtool) rather than obtained from a game-coordinator.  Both blobs are
+	/// expected in PEM-encoded form.  The private key's public key must match the
+	/// public key contained in the certificate.  The pPrivateKey buffer is wiped
+	/// after loading (defensive measure for key material) — pass a copy if you
+	/// need to retain it.  On failure, errMsg describes why.
+	virtual bool SetCertificateAndPrivateKey( const void *pCert, int cbCert,
+	                                          void *pPrivateKey, int cbPrivateKey,
+	                                          SteamNetworkingErrMsg &errMsg ) = 0;
+
+	/// Add a trusted root CA certificate at runtime.  pszBase64Cert is the body
+	/// of a PEM-like blob (just the base64-encoded protobuf, no -----BEGIN/END-----
+	/// wrapper).  Used together with the build-time flag
+	/// STEAMNETWORKINGSOCKETS_ALLOW_DYNAMIC_SELFSIGNED_CERTS to plug in your own
+	/// signing authority for non-Steam deployments.  On failure, errMsg describes
+	/// why.
+	virtual bool AddTrustedRootCA( const char *pszBase64Cert, SteamNetworkingErrMsg &errMsg ) = 0;
+
 	/// Reset the identity associated with this instance.
 	/// Any open connections are closed.  Any previous certificates, etc are discarded.
 	/// You can pass a specific identity that you want to use, or you can pass NULL,
