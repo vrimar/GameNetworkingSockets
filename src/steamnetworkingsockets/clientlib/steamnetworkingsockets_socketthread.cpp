@@ -730,7 +730,7 @@ private:
 };
 
 /// Track packets that have fake lag applied and are pending to be sent/received
-class CPacketLagger : private IThinker
+class CPacketLagger : public IThinker
 {
 public:
 	~CPacketLagger() { Clear(); }

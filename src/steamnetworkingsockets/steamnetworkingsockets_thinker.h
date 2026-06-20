@@ -95,7 +95,7 @@ extern void Thinker_ValidateStatics( CValidator &validator );
 
 /// A thinker that calls a method
 template<typename TOuter>
-class ScheduledMethodThinker : private IThinker
+class ScheduledMethodThinker : public IThinker
 {
 public:
 
