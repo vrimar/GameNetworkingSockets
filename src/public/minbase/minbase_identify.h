@@ -160,6 +160,7 @@
 	#define IsWindows() true
 #elif defined( __ANDROID__ ) || defined( ANDROID )
 	#define IsAndroid() true
+	#define IsLinux() true // GNSNET-ANDROID-ISLINUX
 	#define IsPosix() true
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
