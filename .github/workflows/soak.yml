@@ -13,11 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@main
       - name: Update packages
-        run: sudo -E bash .github/update-packages.sh
+        run: sudo env CI_BUILD="$CI_BUILD" IMAGE="$IMAGE" IMAGE_TAG="$IMAGE_TAG" bash .github/update-packages.sh
       - name: Install dependencies
         run: |
-          sudo -E bash .github/install.sh
-          sudo -E bash .github/install-post.sh
+          sudo env CI_BUILD="$CI_BUILD" IMAGE="$IMAGE" IMAGE_TAG="$IMAGE_TAG" bash .github/install.sh
+          sudo env CI_BUILD="$CI_BUILD" IMAGE="$IMAGE" IMAGE_TAG="$IMAGE_TAG" bash .github/install-post.sh
       - name: Build (Debug)
         run: |
           python3 .github/run-single-config.py \

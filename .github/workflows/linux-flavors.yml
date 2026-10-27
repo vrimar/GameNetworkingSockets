@@ -62,6 +62,9 @@ jobs:
             ci_dist_upgrade: 0
     steps:
       - uses: actions/checkout@main
+      # ThreadSanitizer in older clang aborts on the runner kernel's wider mmap randomization.
+      - name: Narrow mmap randomization
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
       - name: Launch container
         run: |
           docker run -d --rm --name github-docker-builder -e LC_ALL="C" -e LANG="C" -v ${{ github.workspace }}:/build -w /build ${{ matrix.docker_image }}:${{ matrix.docker_tag }} tail -f /dev/null
