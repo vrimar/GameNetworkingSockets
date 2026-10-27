@@ -46,6 +46,12 @@ STEAMNETWORKINGSOCKETS_INTERFACE void SteamNetworkingSockets_SetLockHeldCallback
 /// Use this to customize its priority / affinity, etc
 STEAMNETWORKINGSOCKETS_INTERFACE void SteamNetworkingSockets_SetServiceThreadInitCallback( void (*callback)() );
 
+/// Size, in bytes, requested for the kernel send and receive buffers of each UDP socket opened after
+/// this call.  A listen socket shares one receive buffer among all of its connections, so a server
+/// with many clients can overflow the default and drop packets, handshakes included.  The OS may
+/// cap the request (on Linux, net.core.rmem_max and net.core.wmem_max).
+STEAMNETWORKINGSOCKETS_INTERFACE void SteamNetworkingSockets_SetUDPSocketBufferSize( int cbBytes );
+
 }
 
 #endif // STEAMNETWORKINGSOCKETS_H

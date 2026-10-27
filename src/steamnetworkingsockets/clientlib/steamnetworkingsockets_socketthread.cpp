@@ -92,6 +92,7 @@ namespace SteamNetworkingSocketsLib {
 constexpr int k_msMaxPollWait = 1000;
 
 int g_cbUDPSocketBufferSize = 256*1024;
+static int s_cbUDPSocketKernelBufferSize = 256*1024;
 
 #if PlatformCanSendECN()
 int g_nSendECNAuto = -1;
@@ -1392,14 +1393,14 @@ static SOCKET OpenUDPSocketBoundToSockAddr( const void *pSockaddr, size_t len, S
 	#endif
 
 	// Set buffer sizes
-	opt = g_cbUDPSocketBufferSize;
+	opt = s_cbUDPSocketKernelBufferSize;
 	if ( setsockopt( sock, SOL_SOCKET, SO_SNDBUF, (char *)&opt, sizeof(opt) ) )
 	{
 		V_sprintf_safe( errMsg, "Failed to set socket send buffer size.  Error code 0x%08x.", GetLastSocketError() );
 		closesocket( sock );
 		return INVALID_SOCKET;
 	}
-	opt = g_cbUDPSocketBufferSize;
+	opt = s_cbUDPSocketKernelBufferSize;
 	if ( setsockopt( sock, SOL_SOCKET, SO_RCVBUF, (char *)&opt, sizeof(opt) ) == -1 )
 	{
 		V_sprintf_safe( errMsg, "Failed to set socket recv buffer size.  Error code 0x%08x.", GetLastSocketError() );
@@ -4336,6 +4337,13 @@ STEAMNETWORKINGSOCKETS_INTERFACE void SteamNetworkingSockets_SetServiceThreadIni
 {
 	AssertMsg( !IsServiceThreadRunning(), "Too late!" );
 	s_fnServiceThreadInitCallback = callback;
+}
+
+STEAMNETWORKINGSOCKETS_INTERFACE void SteamNetworkingSockets_SetUDPSocketBufferSize( int cbBytes )
+{
+	// Separate from g_cbUDPSocketBufferSize, which also bounds how many packets one think may send.
+	SteamNetworkingGlobalLock scopeLock( "SetUDPSocketBufferSize" );
+	s_cbUDPSocketKernelBufferSize = cbBytes;
 }
 
 /////////////////////////////////////////////////////////////////////////////
